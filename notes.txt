@@ -30,3 +30,21 @@ Pipes:
     JsonPipe, SlicePipe, AsyncPipe
 
     room.checkInTime | date
+
+Adding styles:
+
+    - npm i bootstrap
+    - copy "bootstrap.min.css" file's path
+  1.
+    - add "@import 'path of bootstrap.min.css'"
+  2.
+    - add path in angular.json's styles array and restart server
+
+Life cycle hooks:
+    - ngOnInit() is used to initialize all the information which, the component needs,
+      and without which it can't be rendered.
+
+Component Interaction:
+    - Using @Input and @Output
+    - Using @ViewChild and @ContentChild
+    - Using services
