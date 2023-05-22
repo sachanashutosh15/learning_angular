@@ -1,0 +1,32 @@
+Binding Syntax:
+    - Interpolation / -> {{}}
+    - Property Binding / -> <div [hidden]="isHidden">Div Content</div>
+    - Event Binding / -> <button (click)="toggle()">Toggle</button>
+
+Directives:
+    - Directives are used to change the behaviour and appearance of DOM element.
+    - Directives can implement all life cycle hooks.
+    - Directives can not have template.
+
+    Two types:
+        - Structural Directives
+        - Attribute Directives
+
+    rooms?.availableRooms ?? "No rooms" / -> if rooms is defined and rooms.availableRooms
+                                            is truthy value then that value else "No rooms"
+
+    directives with * are structural directives
+        - can add or remove elements from the DOM.
+    directives without * are attribute directives
+        - can modify the elements but can't add or remove elements.
+
+    *ngIf, *ngFor, *ngSwich, ngClass, ngStyle
+
+Pipes:
+    - Pipes are used for data transformation.
+    - Pipes don't change actual object.
+
+    DatePipe, UpperCasePipe, LowerCasePipe, TitleCase CurrencyPipe, DecimalPipe, PercentPipe,
+    JsonPipe, SlicePipe, AsyncPipe
+
+    room.checkInTime | date
