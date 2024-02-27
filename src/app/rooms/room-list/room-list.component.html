@@ -1,3 +1,5 @@
+<h2>{{ title }}</h2>
+<hinv-header></hinv-header>
 <table class="table">
   <tr>
     <th>Room Number</th>
@@ -9,21 +11,19 @@
     <th>Rating</th>
     <th>Select Room</th>
   </tr>
-  <tr 
-  [ngClass]="e ? 'even' : 'odd'"  
-  *ngFor="let room of rooms; let e = 'even'; let o = 'odd'">
+  <tr
+    [ngClass]="e ? 'even' : 'odd'"
+    *ngFor="let room of rooms; let e = even; let o = odd"
+  >
     <td>{{ room.roomNumber }}</td>
     <td>{{ room.roomType }}</td>
-    <td>{{ room.price | currency : "INR"}}</td>
+    <td>{{ room.price | currency : "INR" }}</td>
     <td>{{ room.amenities | titlecase }}</td>
-    <td>{{ room.checkInTime | date : "dd/MMM/yyyy hh:mm:ss"}}</td>
+    <td>{{ room.checkInTime | date : "dd/MMM/yyyy hh:mm:ss" }}</td>
     <td>{{ room.checkOutTime | date : "short" }}</td>
-    <td>{{ room.rating | number : "1.1-1"}}</td>
+    <td>{{ room.rating | number : "1.1-1" }}</td>
     <td>
-      <button
-        class="btn btn-primary"
-        (click)="roomSelected(room)"
-      >
+      <button class="btn btn-primary" (click)="roomSelected(room)">
         Select
       </button>
     </td>

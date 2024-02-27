@@ -1,50 +1,98 @@
 Binding Syntax:
-    - Interpolation / -> {{}}
-    - Property Binding / -> <div [hidden]="isHidden">Div Content</div>
-    - Event Binding / -> <button (click)="toggle()">Toggle</button>
+  - Interpolation / -> {{}}
+  - Property Binding / -> <div [hidden]="isHidden">Div Content</div>
+  - Event Binding / -> <button (click)="toggle()">Toggle</button>
 
 Directives:
-    - Directives are used to change the behaviour and appearance of DOM element.
-    - Directives can implement all life cycle hooks.
-    - Directives can not have template.
+  - Directives are used to change the behaviour and appearance of DOM element.
+  - Directives can implement all life cycle hooks.
+  - Directives can not have template.
 
-    Two types:
-        - Structural Directives
-        - Attribute Directives
+  Two types:
+    - Structural Directives
+    - Attribute Directives
 
-    rooms?.availableRooms ?? "No rooms" / -> if rooms is defined and rooms.availableRooms
-                                            is truthy value then that value else "No rooms"
+  rooms?.availableRooms ?? "No rooms" / -> if rooms is defined and rooms.availableRooms
+                                          is truthy value then that value else "No rooms"
 
-    directives with * are structural directives
-        - can add or remove elements from the DOM.
-    directives without * are attribute directives
-        - can modify the elements but can't add or remove elements.
+  directives with * are structural directives
+    - can add or remove elements from the DOM.
+  directives without * are attribute directives
+    - can modify the elements but can't add or remove elements.
 
-    *ngIf, *ngFor, *ngSwich, ngClass, ngStyle
+  *ngIf, *ngFor, *ngSwich, ngClass, ngStyle
 
 Pipes:
-    - Pipes are used for data transformation.
-    - Pipes don't change actual object.
+  - Pipes are used for data transformation.
+  - Pipes don't change actual object.
 
-    DatePipe, UpperCasePipe, LowerCasePipe, TitleCase CurrencyPipe, DecimalPipe, PercentPipe,
-    JsonPipe, SlicePipe, AsyncPipe
+  DatePipe, UpperCasePipe, LowerCasePipe, TitleCase CurrencyPipe, DecimalPipe, PercentPipe,
+  JsonPipe, SlicePipe, AsyncPipe
 
-    room.checkInTime | date
+  room.checkInTime | date
 
 Adding styles:
 
-    - npm i bootstrap
-    - copy "bootstrap.min.css" file's path
+  - npm i bootstrap
+  - copy "bootstrap.min.css" file's path
   1.
     - add "@import 'path of bootstrap.min.css'"
   2.
     - add path in angular.json's styles array and restart server
 
 Life cycle hooks:
-    - ngOnInit() is used to initialize all the information which, the component needs,
-      and without which it can't be rendered.
+  - ngOnInit() is used to initialize all the information which the component needs,
+    and without which it can't be rendered.
 
 Component Interaction:
-    - Using @Input and @Output
-    - Using @ViewChild and @ContentChild
-    - Using services
+  - Using @Input and @Output
+  - Using @ViewChild and @ContentChild
+  - Using services
+
+Change Detection:
+  @Component({
+    changeDetection: ChangeDetectionStrategy.OnPush
+  })
+  if OnPush strategy is being used then the changeDetection tree will ignore the component if
+  input props of the component are not changed,
+  - Make sure that the component is not modifying the state internally, and immutability of inputs is maintained.
+
+ngOnChanges:
+  - Can be applied to the components which have input properties.
+  - When any input property changes it angular detects that change and then calls OnChanges hook with changed value;
+
+NgDoCheck:
+  - Is called whenever any event is raised. Avoid using it.
+    Never implement DoCheck and OnChanges together on the same component.
+
+NgAfterViewInit: 
+  - If there is some blocking code inside ngOnInit of a component and if we want to use that component inside
+    the current component we can't use @ViewChild(ChildComponent, {static: true}), so for that purpose we have
+    ngAfterViewInit hook, after the child component is fully initialized then ngAfterViewInit is called and then
+    we can modify that fully initialized component as desired.
+
+@ViewChild:
+  - Decorator can be used to create an instance of a component.
+  - Then that instance can be used inside some other component and
+    properties can be customized as desired.
+  - If the change detection strategy is OnPush:
+    - then use @ViewChild(HeaderComponent, {static: true}).
+    - Customized the instance of component inside ngOnInit;
+
+    - import ChangeDetectorRef from '@angular/core' instantiate it
+      in constructor as -> constructor(private cd: ChangeDetectorRef) {}
+    - detect changes manually by calling this.cd.detectChanges() manually,
+      inside ngAfterViewInit after customizing the instantiated component.
+
+Using ng-template:
+  .html
+    <ng-template #templateId></ng-template>
+  
+  .ts
+  @ViewChild('templateId', { read: ViewContainerRef, static: true })
+  vcr!: ViewContainerRef;
+
+  ngOnInit() {
+    const containerRef = this.vcr.createComponent(ComponentName);
+    containerRef.instance.property = newProperty;
+  }
