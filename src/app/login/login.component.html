@@ -1,0 +1,33 @@
+<form (ngSubmit)="login()">
+  <div class="form-group">
+    <input
+      #username="ngModel"
+      hinvvalidateemail
+      color="steelblue"
+      hinvhover
+      type="text"
+      class="form-control"
+      name="username"
+      placeholder="Enter Username"
+      [(ngModel)]="loginData.username"
+    />
+    <div>
+      {{ username.errors | json }}
+    </div>
+  </div>
+  <div class="form-group">
+    <input
+      hinvhover
+      color="steelblue"
+      type="password"
+      class="form-control"
+      name="password"
+      email
+      placeholder="Enter Password"
+      [(ngModel)]="loginData.password"
+    />
+  </div>
+  <div>
+    <button class="btn btn-primary" type="submit">Submit</button>
+  </div>
+</form>

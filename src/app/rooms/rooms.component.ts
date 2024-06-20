@@ -1,14 +1,9 @@
-import {
-  AfterViewInit,
-  Component,
-  DoCheck,
-  OnChanges,
-  OnInit,
-  SimpleChanges,
-  ViewChild,
-} from '@angular/core';
-import { Room, Rooms } from './rooms';
-import { HeaderComponent } from '../header/header.component';
+import { Component, DoCheck } from '@angular/core';
+import { Room, Rooms } from './rooms.interface';
+import { RoomsService } from './services/rooms.service';
+import { catchError, of, Subject } from 'rxjs';
+import { ConfigService } from '../services/config.service';
+import { FormControl } from '@angular/forms';
 
 @Component({
   selector: 'hinv-rooms',
@@ -16,36 +11,31 @@ import { HeaderComponent } from '../header/header.component';
   styleUrls: ['./rooms.component.scss'],
 })
 export class RoomsComponent implements DoCheck {
+  constructor(
+    private roomsService: RoomsService,
+    private configService: ConfigService
+  ) {}
   roomList: Room[] = [];
   selectedRoom!: Room;
+  error$ = new Subject<string>();
+  getError$ = this.error$.asObservable();
 
   ngDoCheck() {}
 
-  ngOnInit(): void {
-    this.roomList = [
-      {
-        roomNumber: 201,
-        roomType: 'Type1',
-        amenities: 'Set1',
-        price: 1000,
-        photos:
-          'https://www.google.com/url?sa=i&url=https%3A%2F%2Funsplash.com%2Fimages%2Fanimals%2Fcat&psig=AOvVaw3PhjrEPumX2USBPaPGXX4k&ust=1684667276582000&source=images&cd=vfe&ved=0CBEQjRxqFwoTCMCmmYLhg_8CFQAAAAAdAAAAABAE',
-        checkInTime: new Date('11-Nov-2021'),
-        checkOutTime: new Date('12-Nov-2021'),
-        rating: 3.5,
-      },
-      {
-        roomNumber: 202,
-        roomType: 'Type2',
-        amenities: 'Set2',
-        price: 2000,
-        photos:
-          'https://www.google.com/url?sa=i&url=https%3A%2F%2Funsplash.com%2Fimages%2Fanimals%2Fcat&psig=AOvVaw3PhjrEPumX2USBPaPGXX4k&ust=1684667276582000&source=images&cd=vfe&ved=0CBEQjRxqFwoTCMCmmYLhg_8CFQAAAAAdAAAAABAE',
-        checkInTime: new Date('11-Nov-2021'),
-        checkOutTime: new Date('12-Nov-2021'),
-        rating: 4.2,
-      },
-    ];
+  ngOnInit() {
+    // this.roomsService.getPhotos().subscribe((res) => {
+    //   console.log('>>>res:', res);
+    // });
+    this.roomsService.rooms$
+      .pipe(
+        catchError((err) => {
+          this.error$.next(err.message);
+          return of([]);
+        })
+      )
+      .subscribe((rooms) => {
+        this.roomList = rooms;
+      });
   }
   hotelName = 'Hilton Hotel';
   numberOfRooms = 10;
@@ -67,9 +57,10 @@ export class RoomsComponent implements DoCheck {
 
   title = 'Hello world';
 
+  priceFilter = new FormControl(0);
+
   addRoom() {
     const newRoom: Room = {
-      roomNumber: 203,
       roomType: 'Type2',
       amenities: 'Set2',
       price: 2000,
@@ -79,8 +70,31 @@ export class RoomsComponent implements DoCheck {
       checkOutTime: new Date('12-Nov-2021'),
       rating: 4.2,
     };
-    console.log('roomList>>>', this.roomList);
-    this.roomList = [...this.roomList, newRoom];
-    console.log('roomList>>>', this.roomList);
+    this.roomsService.addRoom(newRoom).subscribe((rooms) => {
+      this.roomList = rooms;
+    });
+  }
+
+  editRoom() {
+    const updatedRoom: Room = {
+      roomNumber: 3,
+      roomType: 'Type2',
+      amenities: 'Set2',
+      price: 2000,
+      photos:
+        'https://www.google.com/url?sa=i&url=https%3A%2F%2Funsplash.com%2Fimages%2Fanimals%2Fcat&psig=AOvVaw3PhjrEPumX2USBPaPGXX4k&ust=1684667276582000&source=images&cd=vfe&ved=0CBEQjRxqFwoTCMCmmYLhg_8CFQAAAAAdAAAAABAE',
+      checkInTime: new Date('11-Nov-2021'),
+      checkOutTime: new Date('12-Nov-2021'),
+      rating: 4.2,
+    };
+    this.roomsService.editRoom(updatedRoom).subscribe((rooms) => {
+      this.roomList = rooms;
+    });
+  }
+
+  deleteRoom() {
+    this.roomsService.deleteRoom(3).subscribe((rooms) => {
+      this.roomList = rooms;
+    });
   }
 }

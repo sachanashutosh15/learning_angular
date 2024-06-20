@@ -71,10 +71,12 @@ NgAfterViewInit:
     ngAfterViewInit hook, after the child component is fully initialized then ngAfterViewInit is called and then
     we can modify that fully initialized component as desired.
 
+ngAfterViewChecked:
+  - Called when one cycle of change detection has completed.
+
 @ViewChild:
-  - Decorator can be used to create an instance of a component.
-  - Then that instance can be used inside some other component and
-    properties can be customized as desired.
+  - Decorator can be used to access an instance of a component.
+  - Then that instance can be customized as desired.
   - If the change detection strategy is OnPush:
     - then use @ViewChild(HeaderComponent, {static: true}).
     - Customized the instance of component inside ngOnInit;
@@ -84,7 +86,21 @@ NgAfterViewInit:
     - detect changes manually by calling this.cd.detectChanges() manually,
       inside ngAfterViewInit after customizing the instantiated component.
 
-Using ng-template:
+@ViewChildren:
+  - Decorator can be used to access the all the instances of an element that is being used in a component
+    and can be modified as desired.
+
+    @ViewChildren(HeaderComponent)
+    headerComponentInstances!: QueryList<HeaderComponent>
+
+    we can modify the properties of different instances of the components like:
+      headerComponentInstances.first.title = 'new title for first instance';
+      headerComponentInstances.last.title = 'new title for last instance';
+      headerComponentInstances.forEach(() => {})
+
+Using ng-template and ViewContainerRef:
+  using ViewContainerRef we can create the new instance of a component that can be modified and then used
+  inside desired component.
   .html
     <ng-template #templateId></ng-template>
   
@@ -96,3 +112,294 @@ Using ng-template:
     const containerRef = this.vcr.createComponent(ComponentName);
     containerRef.instance.property = newProperty;
   }
+
+Content Projection:
+  container.component.html
+    <ng-content></ng-content>
+    <ng-content select="hinv-rooms"></ng-content>
+    <ng-content select="hinv-employees"></ng-content>
+  
+  using <hinv-container></hinv-container>
+    <hinv-container>
+      <hinv-rooms></hinv-rooms>
+      <hinv-employees><hinv-employees>
+      <div>
+        <h1>Hello World</h1>
+      </div>
+    </hinv-container>
+  in container-page <div> will be rendered first, then hinv-rooms, then hinv-employees.
+
+ngAfterContentInit, @ContentChild:
+  It is used to modify the properties of the content that is to be displayed.
+
+  to grab the content child in order to modify @ContentChild decorator is used.
+  @ContentChild(EmployeesComponent) employees!: EmployeesComponent;
+
+  the employees object can be modified only after the content is initialized to make sure that
+  content is completely intialized ngAfterContentInit is used.
+  ngAfterContentInit(): void {
+    this.employees.employeeName = 'new name';
+  }
+
+ngOnDestroy:
+  when an element or component is removed from the DOM then if the onDestroy lifeCycle hook is called.
+
+Dependency Injection:
+  - It's a design pattern.
+  - Dependencies are the class or the objects needed by another class to function properly.
+
+  Providers:
+    - Class based providers.
+    - Value providers.
+    - Factory.
+
+  Class based providers:
+
+    ng g s <service name>
+
+    @Injectable({ providedIn: 'root' })
+    providedIn: 'root' registers the service in the root module, and if the service is never being used
+    angular itself removes the service from the production bundle for optimization.
+
+    in normal cases only one instance of a service will be used and the same instance will be used by all
+    components(dependents) in case a component needs a separate instance of a service for some reason we can
+    determine this in the @Component decorator of that component class:
+    @Component({
+      selector: 'hinv-employee',
+      templateUrl: './employee.component.html',
+      stylesUrls: ['./employee.component.scss'],
+      providers: [ RoomsService ]
+    })
+    now while initializing this component a new instance of the RoomsService will be created and that instance will
+    be used by this component only.
+
+    Dependency resolution modifiers:
+      @Self(): Only checks for dependency if it is avaliable at the component level itself.
+      @SkipSelf(): Skips the check for self.
+      @Optional(): Doesn't throw an error if the service is not available.  
+      @Host(): All the components that are being used inside the component which is using @Host() will start using the hosted
+        instance of the service, dependency resolution will stop at the level of this host for hosted service.
+
+    Value Providers:
+      Creation:
+        const SERVICE_NAME = new InjectionToken<SERVICE_INTERFACE>('token-description: string');
+
+        const VALUE: SERVICE_INTERFACE = object_value;
+
+      Registration:
+        app.module.ts
+        
+        providers: [
+          {
+            provide: SERVICE_NAME,
+            useValue: VALUE
+          }
+        ]
+      
+      Use:
+        In dependent service:
+        
+        constructor(@Inject(SERVICE_NAME) private localNameOfService: SERVICE_INTERFACE) {}
+
+      using localStorage by creating a value provider:
+      
+      localstorage.token.ts
+
+      export const localStorageToken = new InjectionToken<any>('local storage', {
+        providedIn: 'root',
+        factory() {
+          return localStorage;
+        }
+      });
+
+      now this localStorageToken can be injected in any service via constructor.
+        constructor(@Inject(localStorageToken) private localStorage: any);
+
+HttpClientModule:
+  Registration:
+    in app module:
+      import { HttpClientModule } from '@angular/common/http';
+      @NgModule({
+        imports: [HttpClientModule]
+      })
+  now HttpClient can be used in our application.
+
+  in service file:
+
+  @Injectabel({providedIn: 'root'})
+  export class {
+    constructor(private http: HttpClient) {}
+
+    // get request
+    getRequest() {
+      this.http.get<ResponseInterface>(url);
+    }
+
+    // post request
+    postRequest() {
+      this.http.post<ResponseInterface>(url, data);
+    }
+
+    // put request
+    putRequest() {
+      this.http.put<ResponseInterface>(url, data);
+    }
+
+    // deleteRequest
+    deleteRequest() {
+      this.http.delete<ResponseInterface>(url);
+    }
+  }
+
+  HttpRequest:
+    If we want to have access to some additional data such as download progress etc
+    then we can use this on subscription it gives multiple responses which gives the
+    information regarding the download progress etc.
+    getPhotos() {
+      const request = new HttpRequest('GET', url, { reportProgress: true});
+      return this.http.request(request);
+    }
+
+RxJs operators:
+  Caches the api response:
+    this.http.get<Rooms[]>(url).pipe(shareReplay(1));
+  CatchError:
+    error$ = new Subject<string>();
+    getError$ = this.error$.asObservable();
+
+    this.roomsService.getRooms$.pipe(
+      catchError((err) => {
+        this.error$.next(err.message);
+        return of([]);
+      })
+    )
+  Map:
+    roomsCount$ = this.roomsService.getRooms$.pipe(
+      map((rooms) => rooms.length)
+    )
+
+  MergeMap:
+    this.bookingForm.valueChanges
+      .pipe(mergeMap((data) => this.bookingService.bookRoom(data)))
+      .subscribe((data) => {
+        console.log(data);
+      });
+  
+  SwitchMap:
+    this.bookingForm.valueChanges
+      .pipe(switchMap((data) => this.bookingService.bookRoom(data)))
+      .subscribe((data) => {
+        console.log(data);
+      });
+  
+  ExhaustMap:
+    this.bookingForm.valueChanges
+      .pipe(exhaustMap((data) => this.bookingService.bookRoom(data)))
+      .subscribe((data) => {
+        console.log(data);
+      });
+
+Http Interceptors:
+  creating headers:
+    headers = new HttpHeaders({token: '3aoseuro9239489oedllsd9302'})
+    this.http.get('url', { headers: headers })
+  
+  creating http Interceptors:
+  @Injectable()
+  export class RequestInterceptor implements HttpInterceptor {
+    intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+      const updatedReq = req.clone(...);
+      return next.handle(updatedReq);
+    }
+  }
+
+  configuration:
+    in app module providers:
+      {
+        provide: HTTP_INTERCEPTORS,
+        useClass: RequestInterceptor,
+        multi: true,
+      }
+
+App Initializer:
+  InitService:
+    @Injectable({
+      providedIn: 'root',
+    })
+    export class InitService {
+      config: any;
+      constructor(private httpClient: HttpClient) {}
+
+      init() {
+        return this.httpClient
+          .get('/assets/config.json')
+          .pipe(tap((config) => (this.config = config)));
+      }
+    }
+
+  initFactory: in app module
+    function initFactory(initService: InitService) {
+      return () => initService.init();
+    }
+
+  configuration:in app module providers:
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initFactory,
+      deps: [InitService],
+      multi: true,
+    },
+
+Routing:
+  app-routing module:
+  const routes: Routes = [
+    {
+      path: 'employees',
+      component: EmployeesComponent
+    },
+    .
+    .
+    .
+  ]
+    @NgModule({
+      imports: [RouterModule.forRoot(routes)]
+      exports: [RouterModule]
+    })
+    exports class AppRoutingModule {}
+
+  in app.module.ts
+    {
+      imports: [AppRoutingModule]
+    }
+
+  Routes with params:
+    {
+      path: 'rooms/:id',
+      component: BookRoomComponent
+    }
+
+    accessing the param in the component
+
+    > inject ActivatedRoute into the component.
+    > this.activatedRoute.params returns an observable which emits the param values
+    > this.activatedRoute.paramsMap returns an observable which emits a map that can
+      be used to get values
+      this.activatedRoute.paramsMap.subscribe((params) => { console.log(params.get(id)) });
+      this.activatedRoute.params.subscribe((params) => { console.log(params['id']) });
+
+Forms:
+  Template driven forms:
+  Reactive forms:
+
+Lazy loading:
+  To generate a module which is to be loaded lazily.
+  ng g m booking --route=booking --routing --module=app
+
+ProvidedIn:
+  root:
+    initialized only once.
+  any:
+    initialized once for each lazy loaded module.
+  use cases:
+    if we want to override some of the configurations for a module when it is loaded
+    we can achive that by using this.

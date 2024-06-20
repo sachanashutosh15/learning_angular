@@ -1,3 +1,4 @@
+<h3>{{ getError$ | async }}</h3>
 <p>rooms works!</p>
 <p>Welcome to {{ hotelName }}</p>
 <div
@@ -19,13 +20,28 @@
 <button (click)="toggle()">Toggle</button>
 
 <!-- {{ roomList | json }} -->
+{{ priceFilter | json }}
+<div>
+  <input
+    matInput
+    type="text"
+    class="form-control"
+    placeholder="Price"
+    [formControl]="priceFilter"
+  />
+</div>
 
 <div>
-  <button (click)="addRoom()">Add Room</button>
+  <button [routerLink]="'/rooms/new'">Add Room</button>
+  <button (click)="editRoom()">Edit Room 3</button>
+  <button (click)="deleteRoom()">Delete Room 3</button>
 </div>
 
 <hinv-room-list
+  *ngIf="!isHidden"
   [rooms]="roomList"
   (roomSelector)="selectRoom($event)"
   [title]="title"
+  [priceFilter]="priceFilter.value"
 ></hinv-room-list>
+<router-outlet></router-outlet>
